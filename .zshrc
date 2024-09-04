@@ -195,11 +195,33 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 alias vim='nvim'
 alias vi='nvim'
 alias c='clear'
-
-# Update config from git dir 
-alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
+#####
+# Create a config command to stroe config commands
+#####
+# Creating the Repo
+# If you’re setting this up the first time, there’s a few steps 
+# you’ll need to take to set up. First, create the repository:
+#      git init --bare $HOME/.dotfiles
+# This creates a “bare” git repository at ~/.dotfiles. Now we'll 
+# set up an alias to interact with it from any directory on disk. 
+# Add the following alias to your ~/.bashrc or ~/.zshrc or 
+#      ~/.config/fish/config.fish file, then source the file:
+# make sure the --git-dir is the same as the
+# directory where you created the repo above.
+#      alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
+# The --work-tree=$HOME option sets the directory that the repository 
+# tracks to your home directory. Now, since there's probably more files 
+# in your home directory that you don't want in the repo than files 
+# you do want in the repo, you should configure the repo to not 
+# show untracked files by default. We can do that by setting a 
+# repository-local configuration option.
+#     config config --local status.showUntrackedFiles no
+# alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 
 if [[ ! -f "${HOME}/.machinerc" ]] then
   touch .machinerc 
 fi
 source .machinerc
+
+
+
