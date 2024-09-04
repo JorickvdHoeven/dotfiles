@@ -38,22 +38,6 @@ export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 
-######
-## Zinit
-######
-# Set the directory we want to store zinit and plugins
-ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
-
-# Download Zinit, if it's not there yet
-if [ ! -d "$ZINIT_HOME" ]; then
-   mkdir -p "$(dirname $ZINIT_HOME)"
-   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
-fi
-
-# Source/Load zinit
-source "${ZINIT_HOME}/zinit.zsh"
-
-
 
 if [[ -f "/opt/homebrew/bin/brew" ]] then
   # This is to enable homebrew in MacOS
@@ -216,7 +200,9 @@ alias c='clear'
 # show untracked files by default. We can do that by setting a 
 # repository-local configuration option.
 #     config config --local status.showUntrackedFiles no
-# alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
+
+
+alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 
 if [[ ! -f "${HOME}/.machinerc" ]] then
   touch .machinerc 
