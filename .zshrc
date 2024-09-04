@@ -205,9 +205,9 @@ alias c='clear'
 alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 
 if [[ ! -f "${HOME}/.machinerc" ]] then
-  touch .machinerc 
+  touch "${HOME}/.machinerc" 
 fi
-source .machinerc
+source "${HOME}/.machinerc"
 
 
 
