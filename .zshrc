@@ -168,12 +168,22 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
+
 # Completion styling
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+# disable sort when completing `git checkout`
+zstyle ':completion:*:git-checkout:*' sort false
+# set descriptions format to enable group support
+# NOTE: don't use escape sequences here, fzf-tab will ignore them
+zstyle ':completion:*:descriptions' format '[%d]'
+# set list-colors to enable filename colorizing
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+# force zsh not to show completion menu, which allows fzf-tab to capture the unambiguous prefix
 zstyle ':completion:*' menu no
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
-zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:*' fzf-preview 'if [ -d $realpath ]; then eza --tree --color=always --level 2 $realpath | head -200; else bat -n --color=always --line-range :500 $realpath; fi'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --tree --color=always --level 2 $realpath | head -200 '
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --tree --color=always $realpath  --level 2| head -200'
+
+
 
 # Aliases
 alias vim='nvim'
@@ -183,21 +193,21 @@ alias c='clear'
 # Create a config command to stroe config commands
 #####
 # Creating the Repo
-# If you’re setting this up the first time, there’s a few steps 
+# If you’re setting this up the first time, there’s a few steps
 # you’ll need to take to set up. First, create the repository:
 #      git init --bare $HOME/.dotfiles
-# This creates a “bare” git repository at ~/.dotfiles. Now we'll 
-# set up an alias to interact with it from any directory on disk. 
-# Add the following alias to your ~/.bashrc or ~/.zshrc or 
+# This creates a “bare” git repository at ~/.dotfiles. Now we'll
+# set up an alias to interact with it from any directory on disk.
+# Add the following alias to your ~/.bashrc or ~/.zshrc or
 #      ~/.config/fish/config.fish file, then source the file:
 # make sure the --git-dir is the same as the
 # directory where you created the repo above.
 #      alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
-# The --work-tree=$HOME option sets the directory that the repository 
-# tracks to your home directory. Now, since there's probably more files 
-# in your home directory that you don't want in the repo than files 
-# you do want in the repo, you should configure the repo to not 
-# show untracked files by default. We can do that by setting a 
+# The --work-tree=$HOME option sets the directory that the repository
+# tracks to your home directory. Now, since there's probably more files
+# in your home directory that you don't want in the repo than files
+# you do want in the repo, you should configure the repo to not
+# show untracked files by default. We can do that by setting a
 # repository-local configuration option.
 #     config config --local status.showUntrackedFiles no
 
@@ -205,7 +215,7 @@ alias c='clear'
 alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 
 if [[ ! -f "${HOME}/.machinerc" ]] then
-  touch "${HOME}/.machinerc" 
+  touch "${HOME}/.machinerc"
 fi
 source "${HOME}/.machinerc"
 
