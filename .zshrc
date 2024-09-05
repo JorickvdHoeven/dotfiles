@@ -179,10 +179,13 @@ zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 # force zsh not to show completion menu, which allows fzf-tab to capture the unambiguous prefix
 zstyle ':completion:*' menu no
-zstyle ':fzf-tab:complete:*' fzf-preview 'if [ -d $realpath ]; then eza --tree --color=always --level 2 $realpath | head -200; else bat -n --color=always --line-range :500 $realpath; fi'
+zstyle ':fzf-tab:complete:(code|vi|nvim|vim|open):*' fzf-preview 'if [ -d $realpath ]; then eza --tree --color=always --level 2 $realpath | head -200; else bat -n --color=always --line-range :500 $realpath; fi'
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --tree --color=always --level 2 $realpath | head -200 '
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --tree --color=always $realpath  --level 2| head -200'
-
+zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
+	fzf-preview 'echo ${(P)word}'
+zstyle ':fzf-tab:complete:echo:$*' \
+	fzf-preview 'echo ${(P)word}'
 
 
 # Aliases
