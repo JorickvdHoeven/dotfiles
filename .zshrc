@@ -1,4 +1,4 @@
-### jorick's .zshrc file
+### jorick's zshrc file
 
 ## This file requires the following to be installed:
 #     - brew
@@ -10,7 +10,7 @@
 #     - neovim
 #     - git
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -45,18 +45,12 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
 fi
 
 if [[ ! -f "${HOME}/.config/environment/powerlevel10k/powerlevel10k.zsh-theme" ]] then
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.config/environment/powerlevel10k
-fi
-source ~/.config/environment/powerlevel10k/powerlevel10k.zsh-theme
-
-
-if [[ ! -f "${HOME}/.config/environment/powerlevel10k/powerlevel10k.zsh-theme" ]] then
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.config/environment/powerlevel10k
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$HOME/.config/environment/powerlevel10k"
 fi
 source ~/.config/environment/powerlevel10k/powerlevel10k.zsh-theme
 
 if [[ ! -f "${HOME}/.config/environment/fzf-tab/fzf-tab.plugin.zsh" ]] then
-  git clone --depth=1 https://github.com/Aloxaf/fzf-tab ~/.config/environment/fzf-tab
+  git clone --depth=1 https://github.com/Aloxaf/fzf-tab "$HOME/.config/environment/fzf-tab"
 fi
 # Load completions
 autoload -Uz compinit && compinit
@@ -201,7 +195,7 @@ alias c='clear'
 #      git init --bare $HOME/.dotfiles
 # This creates a “bare” git repository at ~/.dotfiles. Now we'll
 # set up an alias to interact with it from any directory on disk.
-# Add the following alias to your ~/.bashrc or ~/.zshrc or
+# Add the following alias to your ~/.bashrc or ~/zshrc or
 #      ~/.config/fish/config.fish file, then source the file:
 # make sure the --git-dir is the same as the
 # directory where you created the repo above.
@@ -221,6 +215,7 @@ if [[ ! -f "${HOME}/.machinerc" ]] then
   touch "${HOME}/.machinerc"
 fi
 source "${HOME}/.machinerc"
+
 
 
 
