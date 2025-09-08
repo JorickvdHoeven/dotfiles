@@ -31,13 +31,20 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
+if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]] then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
+
 ######
 ## Set up Pyenv
 ######
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-
+if [[ -f "~/.pyenv" ]] then 
+  # Not always going to be using pyenv
+  export PYENV_ROOT="$HOME/.pyenv"
+  [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+fi
 
 if [[ -f "/opt/homebrew/bin/brew" ]] then
   # This is to enable homebrew in MacOS
