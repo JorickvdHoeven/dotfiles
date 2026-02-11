@@ -10,77 +10,61 @@
 #     - neovim
 #     - git
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/zshrc.
+# ── Powerlevel10k instant prompt (must stay at top) ──
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-
-if [[ -f "~/environment/homebrew/bin/brew" ]] then
-  # This is to enable homebrew in environments where I have to install homebrew as non-admin
-  eval "$(~/environment/homebrew/bin/brew shellenv)"
-fi
-
-if [[ -f "/opt/homebrew/bin/brew" ]] then
-  # This is to enable homebrew in MacOS
+# ── Homebrew (deduplicated) ──
+if [[ -f "${HOME}/environment/homebrew/bin/brew" ]]; then
+  eval "$(${HOME}/environment/homebrew/bin/brew shellenv)"
+elif [[ -f "/opt/homebrew/bin/brew" ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]] then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# ── Plugin directory ──
+ZSH_ENV_DIR="${HOME}/.config/environment"
+mkdir -p "${ZSH_ENV_DIR}"
+
+# ── First run: install missing plugins synchronously (one-time cost) ──
+if [[ ! -d "${ZSH_ENV_DIR}/powerlevel10k" ]] || \
+   [[ ! -d "${ZSH_ENV_DIR}/fzf-tab" ]] || \
+   [[ ! -d "${ZSH_ENV_DIR}/zsh-syntax-highlighting" ]] || \
+   [[ ! -d "${ZSH_ENV_DIR}/zsh-completions" ]] || \
+   [[ ! -d "${ZSH_ENV_DIR}/zsh-autosuggestions" ]]; then
+  echo "Installing missing zsh plugins..."
+  "${ZSH_ENV_DIR}/zsh-update.sh"
 fi
 
+# ── Source plugins (skip silently if missing) ──
+[[ -f "${ZSH_ENV_DIR}/powerlevel10k/powerlevel10k.zsh-theme" ]] && \
+  source "${ZSH_ENV_DIR}/powerlevel10k/powerlevel10k.zsh-theme"
 
-######
-## Set up Pyenv
-######
-if [[ -f "~/.pyenv" ]] then 
-  # Not always going to be using pyenv
-  export PYENV_ROOT="$HOME/.pyenv"
-  [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init -)"
+# zsh-completions must be added to fpath before compinit
+[[ -d "${ZSH_ENV_DIR}/zsh-completions/src" ]] && \
+  fpath=("${ZSH_ENV_DIR}/zsh-completions/src" $fpath)
+
+# Completions (cached, regenerated once per day instead of every shell)
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
 fi
 
-if [[ -f "/opt/homebrew/bin/brew" ]] then
-  # This is to enable homebrew in MacOS
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
+# fzf-tab must be loaded after compinit
+[[ -f "${ZSH_ENV_DIR}/fzf-tab/fzf-tab.plugin.zsh" ]] && \
+  source "${ZSH_ENV_DIR}/fzf-tab/fzf-tab.plugin.zsh"
 
-if [[ ! -f "${HOME}/.config/environment/powerlevel10k/powerlevel10k.zsh-theme" ]] then
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$HOME/.config/environment/powerlevel10k"
-fi
-source ~/.config/environment/powerlevel10k/powerlevel10k.zsh-theme
+[[ -f "${ZSH_ENV_DIR}/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && \
+  source "${ZSH_ENV_DIR}/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-if [[ ! -f "${HOME}/.config/environment/fzf-tab/fzf-tab.plugin.zsh" ]] then
-  git clone --depth=1 https://github.com/Aloxaf/fzf-tab "$HOME/.config/environment/fzf-tab"
-fi
-# Load completions
-autoload -Uz compinit && compinit
-source ~/.config/environment/fzf-tab/fzf-tab.plugin.zsh
-
-# Check if zsh-syntax-highlighting is installed
-if [[ ! -d "${HOME}/.config/environment/zsh-syntax-highlighting" ]]; then
-  git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${HOME}/.config/environment/zsh-syntax-highlighting"
-fi
-source "${HOME}/.config/environment/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-
-if [[ ! -d "${HOME}/.config/environment/zsh-completions" ]] then
-  git clone --depth=1 https://github.com/zsh-users/zsh-completions.git "${HOME}/.config/environment/zsh-completions"
-fi
- fpath=("${HOME}/.config/environment/zsh-completions/src"  $fpath)
-
-if [[ ! -f "${HOME}/.config/environment/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] then
- git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${HOME}/.config/environment/zsh-autosuggestions"
-fi
-source "${HOME}/.config/environment/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-# Reload completions
-autoload -U compinit && compinit
+# syntax-highlighting must be sourced last among plugins
+[[ -f "${ZSH_ENV_DIR}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && \
+  source "${ZSH_ENV_DIR}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 ######
 ## Eza (better ls)
@@ -94,7 +78,7 @@ eval "$(direnv hook zsh)"
 
 
 ######
-## fzf setup (better completion and search
+## fzf setup (better completion and search)
 ######
 
 # Set up fzf key bindings and fuzzy completion
@@ -193,36 +177,33 @@ zstyle ':fzf-tab:complete:echo:$*' \
 alias vim='nvim'
 alias vi='nvim'
 alias c='clear'
-#####
-# Create a config command to stroe config commands
-#####
-# Creating the Repo
-# If you’re setting this up the first time, there’s a few steps
-# you’ll need to take to set up. First, create the repository:
-#      git init --bare $HOME/.dotfiles
-# This creates a “bare” git repository at ~/.dotfiles. Now we'll
-# set up an alias to interact with it from any directory on disk.
-# Add the following alias to your ~/.bashrc or ~/zshrc or
-#      ~/.config/fish/config.fish file, then source the file:
-# make sure the --git-dir is the same as the
-# directory where you created the repo above.
-#      alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
-# The --work-tree=$HOME option sets the directory that the repository
-# tracks to your home directory. Now, since there's probably more files
-# in your home directory that you don't want in the repo than files
-# you do want in the repo, you should configure the repo to not
-# show untracked files by default. We can do that by setting a
-# repository-local configuration option.
-#     config config --local status.showUntrackedFiles no
-
-
 alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 
-if [[ ! -f "${HOME}/.machinerc" ]] then
-  touch "${HOME}/.machinerc"
-fi
+# ── Machine-specific config ──
+[[ ! -f "${HOME}/.machinerc" ]] && touch "${HOME}/.machinerc"
 source "${HOME}/.machinerc"
 
 
+# added by setup_fb4a.sh
+export ANDROID_SDK=/opt/android_sdk
+export ANDROID_NDK_REPOSITORY=/opt/android_ndk
+export ANDROID_HOME=${ANDROID_SDK}
+export PATH=${PATH}:${ANDROID_SDK}/emulator:${ANDROID_SDK}/tools:${ANDROID_SDK}/tools/bin:${ANDROID_SDK}/platform-tools
+fastboot() { if $(ek status | grep -q '"status": {}'); then /opt/facebook/maui-cli/bin/platform-tools/fastboot "$@"; else /var/folders/c0/z8r_nsr91_1c_l9zgsc85gf40000gn/0/ek/android/fastboot "$@"; fi } # EK_RC_ENV_hRtVBQ556GKN
 
+# ── Background weekly plugin update ──
+# Checks if 7+ days have passed since last update, then runs the updater
+# asynchronously so the shell isn't blocked.
+() {
+  local stamp="${ZSH_ENV_DIR}/.last_update"
+  local now=$(date +%s)
+  local interval=$((7 * 24 * 60 * 60))
 
+  # No stamp file means first run was just handled above
+  [[ ! -f "$stamp" ]] && return
+
+  local last=$(cat "$stamp" 2>/dev/null || echo 0)
+  if (( now - last >= interval )); then
+    "${ZSH_ENV_DIR}/zsh-update.sh" &>/dev/null &!
+  fi
+}
