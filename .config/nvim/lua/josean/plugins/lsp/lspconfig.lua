@@ -71,12 +71,16 @@ return {
     local capabilities = cmp_nvim_lsp.default_capabilities()
 
     -- Change the Diagnostic symbols in the sign column (gutter)
-    -- (not in youtube nvim video)
-    local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-    for type, icon in pairs(signs) do
-      local hl = "DiagnosticSign" .. type
-      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-    end
+    vim.diagnostic.config({
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = " ",
+          [vim.diagnostic.severity.WARN] = " ",
+          [vim.diagnostic.severity.HINT] = "󰠠 ",
+          [vim.diagnostic.severity.INFO] = " ",
+        },
+      },
+    })
 
     mason_lspconfig.setup({
       handlers = {
@@ -84,31 +88,6 @@ return {
         function(server_name)
           lspconfig[server_name].setup({
             capabilities = capabilities,
-          })
-        end,
-        ["svelte"] = function()
-          lspconfig["svelte"].setup({
-            capabilities = capabilities,
-            on_attach = function(client, bufnr)
-              vim.api.nvim_create_autocmd("BufWritePost", {
-                pattern = { "*.js", "*.ts" },
-                callback = function(ctx)
-                  client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
-                end,
-              })
-            end,
-          })
-        end,
-        ["graphql"] = function()
-          lspconfig["graphql"].setup({
-            capabilities = capabilities,
-            filetypes = { "graphql", "gql", "svelte", "typescriptreact", "javascriptreact" },
-          })
-        end,
-        ["emmet_ls"] = function()
-          lspconfig["emmet_ls"].setup({
-            capabilities = capabilities,
-            filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "svelte" },
           })
         end,
         ["clangd"] = function()
@@ -134,5 +113,7 @@ return {
         end,
       },
     })
+
+    vim.lsp.enable("pyrefly")
   end,
 }
