@@ -214,8 +214,8 @@ fastboot() { if $(ek status | grep -q '"status": {}'); then /opt/facebook/maui-c
 test -e /Users/jorickvdh/.iterm2_shell_integration.zsh && source /Users/jorickvdh/.iterm2_shell_integration.zsh || true
 
 # Add hostname badges in tmux terminals
-if [[ -n "$TMUX" ]]; then
-   printf "\ePtmux;\e\e]1337;SetBadgeFormat=%s\a\e\\" $(echo -n "$HOST" | base64)
-else
-    printf "\e]1337;SetBadgeFormat=%s\a" $(echo -n "$HOST" | base64)
-fi
+# if [[ -n "$TMUX" ]]; then
+#   printf "\ePtmux;\e\e]1337;SetBadgeFormat=%s\a\e\\" $(echo -n "$HOST" | base64)
+#else
+#    printf "\e]1337;SetBadgeFormat=%s\a" $(echo -n "$HOST" | base64)
+#fi
