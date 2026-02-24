@@ -211,7 +211,7 @@ fastboot() { if $(ek status | grep -q '"status": {}'); then /opt/facebook/maui-c
 . "$HOME/.local/bin/env"
 
 # Enable iTerm2 integration
-test -e /Users/jorickvdh/.iterm2_shell_integration.zsh && source /Users/jorickvdh/.iterm2_shell_integration.zsh || true
+# test -e /Users/jorickvdh/.iterm2_shell_integration.zsh && source /Users/jorickvdh/.iterm2_shell_integration.zsh || true
 
 # Add hostname badges in tmux terminals
 # if [[ -n "$TMUX" ]]; then
