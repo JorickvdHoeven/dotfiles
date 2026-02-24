@@ -207,3 +207,8 @@ fastboot() { if $(ek status | grep -q '"status": {}'); then /opt/facebook/maui-c
     "${ZSH_ENV_DIR}/zsh-update.sh" &>/dev/null &!
   fi
 }
+
+. "$HOME/.local/bin/env"
+
+printf "\ePtmux;\e\e]1337;SetBadgeFormat=%s\a\e\\" $(echo -n "$HOSTNAME" | base64)
+
