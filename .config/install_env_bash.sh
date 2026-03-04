@@ -28,19 +28,35 @@ echo "✓ Dotfiles installed"
 
 # ── 2. Install Homebrew ──
 if ! command -v brew &>/dev/null; then
-  if sudo -n true 2>/dev/null; then
-    echo "Installing Homebrew (system-wide)..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    if [[ -f "/opt/homebrew/bin/brew" ]]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    fi
-  else
-    echo "No sudo access — installing Homebrew to ~/environment/homebrew..."
-    mkdir -p "${HOME}/environment"
-    git clone https://github.com/Homebrew/brew.git "${HOME}/environment/homebrew"
+  # Also check common non-standard locations
+  if [[ -f "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -f "${HOME}/environment/homebrew/bin/brew" ]]; then
     eval "$(${HOME}/environment/homebrew/bin/brew shellenv)"
-    brew update --force --quiet
+  else
+    # Try git clone first (works behind proxies and without sudo)
+    echo "Installing Homebrew to ~/environment/homebrew..."
+    mkdir -p "${HOME}/environment"
+    if git clone https://github.com/Homebrew/brew.git "${HOME}/environment/homebrew"; then
+      eval "$(${HOME}/environment/homebrew/bin/brew shellenv)"
+      brew update --force --quiet
+    elif sudo -n true 2>/dev/null; then
+      # Fallback: system-wide install (requires internet without proxy issues)
+      echo "Git clone failed, trying system-wide install..."
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      if [[ -f "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      fi
+    else
+      echo "ERROR: Could not install Homebrew. Install it manually and re-run."
+      exit 1
+    fi
   fi
+fi
+
+if ! command -v brew &>/dev/null; then
+  echo "ERROR: brew still not found after install. Check your PATH."
+  exit 1
 fi
 echo "✓ Homebrew ready"
 
