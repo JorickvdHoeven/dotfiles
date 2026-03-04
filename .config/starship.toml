@@ -1,0 +1,301 @@
+# Starship config — mimics jorick's p10k lean theme
+# Docs: https://starship.rs/config/
+
+# ── General ──
+# Blank line between prompts (p10k: sparse mode)
+add_newline = true
+
+# Prompt format: 2-line lean layout matching p10k
+# Line 1: os_icon  directory  git        ...right-side modules
+# Line 2: prompt_char
+format = """
+$os\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$fill\
+$status\
+$cmd_duration\
+$jobs\
+$direnv\
+$python\
+$conda\
+$nodejs\
+$golang\
+$rust\
+$java\
+$ruby\
+$kubernetes\
+$terraform\
+$aws\
+$azure\
+$gcloud\
+$time\
+$line_break\
+$character"""
+
+# Right-side fill with ─ (p10k: MULTILINE_FIRST_PROMPT_GAP_CHAR)
+[fill]
+symbol = '─'
+style = '238'
+
+# ── OS Icon (left, line 1) ──
+[os]
+disabled = false
+style = 'bold white'
+
+[os.symbols]
+Macos = "\uf179 "
+
+# ── Hostname ──
+[hostname]
+ssh_only = false
+format = '[$hostname]($style) in '
+style = 'bold green'
+trim_at = '.'
+
+# ── Directory ──
+[directory]
+style = 'bold 39'           # anchor color (p10k: DIR_ANCHOR_FOREGROUND=39)
+truncation_length = 4
+truncation_symbol = '…/'
+truncate_to_repo = false
+read_only = ' 󰌾'
+read_only_style = '196'
+
+# ── Git Branch ──
+[git_branch]
+format = 'on [$symbol$branch(:$remote_branch)]($style) '
+symbol = ' '              # p10k: VCS_BRANCH_ICON \uF126
+style = 'bold 76'           # p10k: VCS_CLEAN_FOREGROUND=76
+truncation_length = 32
+truncation_symbol = '…'
+
+# ── Git Status ──
+[git_status]
+format = '([$all_status$ahead_behind]($style))'
+style = '178'                # p10k: VCS_MODIFIED_FOREGROUND=178
+conflicted = '=${count}'
+ahead = '⇡${count}'
+behind = '⇣${count}'
+diverged = '⇡${ahead_count}⇣${behind_count}'
+untracked = '?${count}'
+stashed = '*${count}'
+modified = '!${count}'
+staged = '+${count}'
+renamed = '»${count}'
+deleted = '✘${count}'
+
+# ── Prompt Character (line 2) ──
+[character]
+success_symbol = '[❯](bold 76)'    # p10k: PROMPT_CHAR_OK green
+error_symbol = '[❯](bold 196)'     # p10k: PROMPT_CHAR_ERROR red
+vimcmd_symbol = '[❮](bold 76)'     # p10k: PROMPT_CHAR vi cmd mode
+vimcmd_replace_one_symbol = '[▶](bold 76)'
+vimcmd_replace_symbol = '[▶](bold 76)'
+vimcmd_visual_symbol = '[V](bold 76)'
+
+# ── Status (right side, line 1) ──
+[status]
+disabled = false
+format = '[$symbol$signal_name]($style) '
+symbol = '✘'
+style = '160'                # p10k: STATUS_ERROR_FOREGROUND=160
+sigint_symbol = '✘'
+not_executable_symbol = '🚫'
+not_found_symbol = '🔍'
+map_symbol = true
+pipestatus = true
+
+# ── Command Duration (right side, line 1) ──
+[cmd_duration]
+min_time = 3_000             # p10k: COMMAND_EXECUTION_TIME_THRESHOLD=3
+format = 'took [$duration]($style) '
+style = '101'                # p10k: COMMAND_EXECUTION_TIME_FOREGROUND=101
+show_milliseconds = false
+
+# ── Background Jobs ──
+[jobs]
+style = '70'                 # p10k: BACKGROUND_JOBS_FOREGROUND=70
+symbol = '✦'
+number_threshold = 1
+symbol_threshold = 1
+
+# ── direnv ──
+[direnv]
+disabled = false
+format = '[$loaded]($style) '
+style = 'yellow'
+allowed_msg = '✓'
+not_allowed_msg = 'not allowed'
+denied_msg = '✗'
+loaded_msg = '✓'
+unloaded_msg = ''
+
+# ── Python / virtualenv / conda ──
+[python]
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+symbol = '🐍 '
+style = 'yellow'
+
+[conda]
+format = '[$symbol$environment]($style) '
+symbol = '🅒 '
+style = 'green'
+
+# ── Node.js ──
+[nodejs]
+format = '[$symbol($version )]($style)'
+symbol = ' '
+style = 'green'
+detect_files = ['package.json', '.node-version', '.nvmrc']
+
+# ── Go ──
+[golang]
+disabled = true              # was commented out in p10k
+
+# ── Rust ──
+[rust]
+disabled = true              # was commented out in p10k
+
+# ── Java ──
+[java]
+disabled = true              # was commented out in p10k
+
+# ── Ruby ──
+[ruby]
+format = '[$symbol($version )]($style)'
+symbol = '💎 '
+style = 'red'
+
+# ── Kubernetes ──
+[kubernetes]
+disabled = true
+format = '[$symbol$context( \($namespace\))]($style) '
+symbol = '☸ '
+style = 'cyan'
+
+# ── Terraform ──
+[terraform]
+format = '[$symbol$workspace]($style) '
+symbol = '💠 '
+style = 'purple'
+
+# ── AWS ──
+[aws]
+disabled = true
+format = '[$symbol($profile )(\($region\) )]($style)'
+symbol = '☁️  '
+style = 'yellow'
+
+# ── Azure ──
+[azure]
+disabled = false
+format = '[$symbol($subscription )]($style)'
+symbol = '󰠅 '
+style = 'blue'
+
+# ── GCloud ──
+[gcloud]
+format = '[$symbol$account(@$domain)(\($project\) )]($style)'
+symbol = '☁️  '
+style = 'blue'
+
+# ── Disabled modules (keep prompt fast) ──
+[package]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[helm]
+disabled = true
+
+[php]
+disabled = true
+
+[dotnet]
+disabled = true
+
+[elixir]
+disabled = true
+
+[elm]
+disabled = true
+
+[haskell]
+disabled = true
+
+[julia]
+disabled = true
+
+[nim]
+disabled = true
+
+[perl]
+disabled = true
+
+[scala]
+disabled = true
+
+[swift]
+disabled = true
+
+[zig]
+disabled = true
+
+[buf]
+disabled = true
+
+[cmake]
+disabled = true
+
+[crystal]
+disabled = true
+
+[dart]
+disabled = true
+
+[deno]
+disabled = true
+
+[gradle]
+disabled = true
+
+[lua]
+disabled = true
+
+[meson]
+disabled = true
+
+[ocaml]
+disabled = true
+
+[opa]
+disabled = true
+
+[pulumi]
+disabled = true
+
+[purescript]
+disabled = true
+
+[rlang]
+disabled = true
+
+[solidity]
+disabled = true
+
+[spack]
+disabled = true
+
+[vlang]
+disabled = true
+
+# ── Time ──
+[time]
+disabled = false
+format = "at [\uf017 $time]($style)"
+time_format = '%H:%M:%S'
+style = 'green'

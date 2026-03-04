@@ -1,4 +1,4 @@
-### jorick's zshrc file (starship edition — no heavy plugins)
+### jorick's bashrc file (converted from .zshrc)
 
 ## This file requires the following to be installed:
 #     - brew
@@ -9,50 +9,22 @@
 #     - eza
 #     - neovim
 #     - git
-#     - starship (brew install starship)
 #     - bat (for previews)
-#
-## Optional (auto-installed by zsh-update-alt.sh):
-#     - zsh-syntax-highlighting (via homebrew)
-#     - zsh-autosuggestions (via homebrew)
-#     - zsh-completions (via homebrew)
 
-# ── Homebrew (deduplicated) ──
+# ── Homebrew ──
 if [[ -f "${HOME}/environment/homebrew/bin/brew" ]]; then
   eval "$(${HOME}/environment/homebrew/bin/brew shellenv)"
 elif [[ -f "/opt/homebrew/bin/brew" ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-# ── Brew prefix (cached to avoid repeated calls) ──
+# ── Bash completion ──
+# Source bash-completion if available (brew install bash-completion@2)
 if command -v brew &>/dev/null; then
   BREW_PREFIX="$(brew --prefix)"
-fi
-
-# ── Completions (must come before compinit) ──
-# zsh-completions from homebrew
-if [[ -d "${BREW_PREFIX}/share/zsh-completions" ]]; then
-  fpath=("${BREW_PREFIX}/share/zsh-completions" $fpath)
-fi
-
-# Completions (cached, regenerated once per day)
-autoload -Uz compinit
-if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
-  compinit
-else
-  compinit -C
-fi
-
-# ── Plugins via Homebrew (lightweight, no git clones) ──
-
-# zsh-autosuggestions
-if [[ -f "${BREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
-  source "${BREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-fi
-
-# zsh-syntax-highlighting (must be sourced last among plugins)
-if [[ -f "${BREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
-  source "${BREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  if [[ -r "${BREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
+    source "${BREW_PREFIX}/etc/profile.d/bash_completion.sh"
+  fi
 fi
 
 ######
@@ -63,14 +35,14 @@ alias ls="eza --color=always --icons=always --git"
 ######
 ## direnv (local folder env variables)
 ######
-eval "$(direnv hook zsh)"
+eval "$(direnv hook bash)"
 
 ######
 ## fzf setup (better completion and search)
 ######
 
 # Set up fzf key bindings and fuzzy completion
-eval "$(fzf --zsh)"
+eval "$(fzf --bash)"
 
 # --- setup fzf theme ---
 fg="#CBE0F0"
@@ -115,32 +87,24 @@ _fzf_comprun() {
   esac
 }
 
-# Keybindings
-bindkey -e
-bindkey '^[[A' history-search-backward
-bindkey '^[[B' history-search-forward
-bindkey '^[w' kill-region
+# ── Keybindings (emacs mode, matching zsh bindkey -e) ──
+set -o emacs
 
-# History
+# Up/down arrow: history search matching current prefix
+bind '"\e[A": history-search-backward'
+bind '"\e[B": history-search-forward'
+
+# ── History ──
 HISTSIZE=5000
-HISTFILE=~/.zsh_history
-SAVEHIST=$HISTSIZE
-HISTDUP=erase
-setopt appendhistory
-setopt sharehistory
-setopt hist_ignore_space
-setopt hist_ignore_all_dups
-setopt hist_save_no_dups
-setopt hist_ignore_dups
-setopt hist_find_no_dups
+HISTFILE=~/.bash_history
+HISTFILESIZE=$HISTSIZE
+HISTCONTROL=ignoreboth:erasedups
 
-# Completion styling
-zstyle ':completion:*:git-checkout:*' sort false
-zstyle ':completion:*:descriptions' format '[%d]'
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' menu select
+shopt -s histappend
+# Flush history after each command so multiple terminals share it
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }history -a; history -n"
 
-# Aliases
+# ── Aliases ──
 alias vim='nvim'
 alias vi='nvim'
 alias c='clear'
@@ -150,33 +114,21 @@ alias config="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 [[ ! -f "${HOME}/.machinerc" ]] && touch "${HOME}/.machinerc"
 source "${HOME}/.machinerc"
 
-# added by setup_fb4a.sh
+# ── Android SDK (added by setup_fb4a.sh) ──
 export ANDROID_SDK=/opt/android_sdk
 export ANDROID_NDK_REPOSITORY=/opt/android_ndk
 export ANDROID_HOME=${ANDROID_SDK}
 export PATH=${PATH}:${ANDROID_SDK}/emulator:${ANDROID_SDK}/tools:${ANDROID_SDK}/tools/bin:${ANDROID_SDK}/platform-tools
-fastboot() { if $(ek status | grep -q '"status": {}'); then /opt/facebook/maui-cli/bin/platform-tools/fastboot "$@"; else /var/folders/c0/z8r_nsr91_1c_l9zgsc85gf40000gn/0/ek/android/fastboot "$@"; fi } # EK_RC_ENV_hRtVBQ556GKN
+fastboot() { if $(ek status | grep -q '"status": {}'); then /opt/facebook/maui-cli/bin/platform-tools/fastboot "$@"; else /var/folders/c0/z8r_nsr91_1c_l9zgsc85gf40000gn/0/ek/android/fastboot "$@"; fi }
 
-# ── Zoxide (smart cd) ──
+# ── Zoxide (better cd) ──
 if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init zsh)"
+  eval "$(zoxide init bash)"
 fi
 
-# ── Starship prompt (fast, cross-shell, customizable) ──
+# ── Starship prompt (bash alternative to powerlevel10k) ──
+# Install: brew install starship
 # Configure: ~/.config/starship.toml
-eval "$(starship init zsh)"
-
-# ── Background weekly dependency check ──
-# Runs zsh-update-alt.sh asynchronously to ensure brew packages are present.
-() {
-  local stamp="${HOME}/.config/environment/.last_update_alt"
-  local now=$(date +%s)
-  local interval=$((7 * 24 * 60 * 60))
-
-  [[ ! -f "$stamp" ]] && return
-
-  local last=$(cat "$stamp" 2>/dev/null || echo 0)
-  if (( now - last >= interval )); then
-    "${HOME}/.config/environment/zsh-update-alt.sh" &>/dev/null &!
-  fi
-}
+if command -v starship &>/dev/null; then
+  eval "$(starship init bash)"
+fi

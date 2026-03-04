@@ -1,20 +1,28 @@
 #!/usr/bin/env zsh
 # ~/.config/environment/zsh-update.sh
-# Background updater for zsh plugins. Runs weekly, triggered by .zshrc.
-# - Installs missing plugins, pulls updates for existing ones
-# - Opens a new Terminal window to notify the user if errors occur
+# Ensures all brew-based zsh dependencies are installed and up to date.
+# Runs weekly, triggered by .zshrc.
+# Uses Homebrew packages instead of git clones.
 
 ENVIRONMENT_DIR="${HOME}/.config/environment"
 STAMP_FILE="${ENVIRONMENT_DIR}/.last_update"
 LOG_FILE="${ENVIRONMENT_DIR}/.update.log"
 LOCK_FILE="${ENVIRONMENT_DIR}/.update.lock"
 
-plugins=(
-  "powerlevel10k|https://github.com/romkatv/powerlevel10k.git"
-  "fzf-tab|https://github.com/Aloxaf/fzf-tab.git"
-  "zsh-syntax-highlighting|https://github.com/zsh-users/zsh-syntax-highlighting.git"
-  "zsh-completions|https://github.com/zsh-users/zsh-completions.git"
-  "zsh-autosuggestions|https://github.com/zsh-users/zsh-autosuggestions.git"
+# All dependencies managed via brew
+brew_packages=(
+  starship
+  zsh-syntax-highlighting
+  zsh-autosuggestions
+  zsh-completions
+  fzf
+  fd
+  eza
+  bat
+  zoxide
+  direnv
+  neovim
+  git-delta
 )
 
 # ── Atomic lock via mkdir ──
@@ -33,30 +41,42 @@ trap 'rm -rf "$LOCK_FILE"' EXIT INT TERM
 # ── Helpers ──
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE" }
 
+# ── Ensure brew is available ──
+if [[ -f "${HOME}/environment/homebrew/bin/brew" ]]; then
+  eval "$(${HOME}/environment/homebrew/bin/brew shellenv)"
+elif [[ -f "/opt/homebrew/bin/brew" ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+if ! command -v brew &>/dev/null; then
+  log "ERROR: brew not found, cannot proceed"
+  exit 1
+fi
+
 # ── Main ──
-log "=== Starting zsh plugin update ==="
+log "=== Starting zsh dependency update ==="
 
 errors=()
 
-for entry in "${plugins[@]}"; do
-  name="${entry%%|*}"
-  url="${entry#*|}"
-  dir="${ENVIRONMENT_DIR}/${name}"
-
-  if [[ ! -d "$dir" ]]; then
-    log "Installing ${name}"
-    if ! GIT_TERMINAL_PROMPT=0 git clone --depth=1 "$url" "$dir" >> "$LOG_FILE" 2>&1; then
-      log "ERROR: Failed to clone ${name}"
-      errors+=("Failed to install ${name}")
+# Install missing packages
+for pkg in "${brew_packages[@]}"; do
+  if ! brew list "$pkg" &>/dev/null; then
+    log "Installing ${pkg}"
+    if ! brew install "$pkg" >> "$LOG_FILE" 2>&1; then
+      log "ERROR: Failed to install ${pkg}"
+      errors+=("Failed to install ${pkg}")
     fi
-  else
-    log "Updating ${name}"
-    if ! GIT_TERMINAL_PROMPT=0 git -C "$dir" pull --ff-only >> "$LOG_FILE" 2>&1; then
-      log "Fast-forward failed for ${name}, resetting to origin"
-      if ! { GIT_TERMINAL_PROMPT=0 git -C "$dir" fetch origin >> "$LOG_FILE" 2>&1 && \
-             git -C "$dir" reset --hard origin/HEAD >> "$LOG_FILE" 2>&1; }; then
-        log "ERROR: Failed to update ${name}"
-        errors+=("Failed to update ${name}")
+  fi
+done
+
+# Upgrade all managed packages
+log "Upgrading installed packages"
+for pkg in "${brew_packages[@]}"; do
+  if brew list "$pkg" &>/dev/null; then
+    if ! brew upgrade "$pkg" >> "$LOG_FILE" 2>&1; then
+      # brew upgrade exits non-zero if already up to date — not an error
+      if brew outdated "$pkg" &>/dev/null; then
+        log "WARNING: ${pkg} upgrade returned non-zero (may already be current)"
       fi
     fi
   fi
@@ -69,7 +89,7 @@ if (( ${#errors[@]} > 0 )); then
   notify_script=$(mktemp /tmp/zsh-update-notify.XXXXXX.sh)
   {
     echo '#!/usr/bin/env zsh'
-    echo 'echo "Zsh plugin update encountered errors:\n"'
+    echo 'echo "Zsh dependency update encountered errors:\n"'
     for e in "${errors[@]}"; do
       echo "echo '  - ${e}'"
     done

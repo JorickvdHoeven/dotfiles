@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# ~/.config/install_env.sh
-# Full environment bootstrap for the starship-based zsh setup.
+# ~/.config/install_env_bash.sh
+# Full environment bootstrap for the bash setup (.custom_bashrc).
 # Installs Homebrew (if missing), all brew dependencies, and clones dotfiles.
 
 set -euo pipefail
 
-echo "=== Starship Environment Setup ==="
+echo "=== Bash Environment Setup ==="
 
 # ── 1. Clone dotfiles (bare repo) ──
 if [[ ! -d "$HOME/.dotfiles" ]]; then
@@ -28,7 +28,6 @@ echo "✓ Dotfiles installed"
 
 # ── 2. Install Homebrew ──
 if ! command -v brew &>/dev/null; then
-  # Check if we have sudo access
   if sudo -n true 2>/dev/null; then
     echo "Installing Homebrew (system-wide)..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -61,10 +60,8 @@ brew_packages=(
   git
   git-delta
 
-  # Zsh plugins (via brew, no git clones needed)
-  zsh-syntax-highlighting
-  zsh-autosuggestions
-  zsh-completions
+  # Bash completion
+  bash-completion@2
 )
 
 echo "Installing brew packages..."
@@ -78,15 +75,18 @@ for pkg in "${brew_packages[@]}"; do
 done
 echo "✓ All packages installed"
 
-# ── 4. Activate .zshrc_alt ──
-if [[ -f "$HOME/.zshrc_alt" ]]; then
-  echo ""
-  echo "To switch to the starship config, run:"
-  echo "  cp ~/.zshrc ~/.zshrc_omz_backup && cp ~/.zshrc_alt ~/.zshrc"
-  echo ""
-  echo "Or test it first in a subshell:"
-  echo "  ZDOTDIR=/tmp zsh -c 'source ~/.zshrc_alt'"
+# ── 4. Activate .custom_bashrc ──
+if [[ -f "$HOME/.custom_bashrc" ]]; then
+  # Add source line to .bashrc if not already present
+  if ! grep -q 'source.*\.custom_bashrc' "$HOME/.bashrc" 2>/dev/null; then
+    echo "" >> "$HOME/.bashrc"
+    echo "source ~/.custom_bashrc" >> "$HOME/.bashrc"
+    echo "✓ Added 'source ~/.custom_bashrc' to ~/.bashrc"
+  else
+    echo "✓ .bashrc already sources .custom_bashrc"
+  fi
 fi
 
 echo ""
 echo "=== Setup complete ==="
+echo "Start a new bash session or run: source ~/.bashrc"
