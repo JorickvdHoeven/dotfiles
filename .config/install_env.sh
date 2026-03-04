@@ -69,11 +69,21 @@ brew_packages=(
 
 echo "Installing brew packages..."
 for pkg in "${brew_packages[@]}"; do
-  if ! brew list "$pkg" &>/dev/null; then
+  # Check if already available on the system (e.g. git via Xcode CLT)
+  bin_name="${pkg}"
+  # Map brew package names to binary names where they differ
+  case "$pkg" in
+    git-delta)  bin_name="delta" ;;
+    zsh-*)      bin_name="" ;;  # plugins, no binary to check
+  esac
+
+  if [[ -n "$bin_name" ]] && command -v "$bin_name" &>/dev/null && ! brew list "$pkg" &>/dev/null; then
+    echo "  $pkg already available (system), skipping"
+  elif brew list "$pkg" &>/dev/null; then
+    echo "  $pkg already installed (brew)"
+  else
     echo "  Installing $pkg..."
     brew install "$pkg"
-  else
-    echo "  $pkg already installed"
   fi
 done
 echo "✓ All packages installed"
