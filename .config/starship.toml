@@ -138,6 +138,9 @@ unloaded_msg = ''
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 symbol = '🐍 '
 style = 'yellow'
+detect_extensions = []
+detect_files = []
+detect_folders = []
 
 [conda]
 format = '[$symbol$environment]($style) '
@@ -191,13 +194,14 @@ style = 'yellow'
 
 # ── Azure ──
 [azure]
-disabled = false
+disabled = true
 format = '[$symbol($subscription )]($style)'
 symbol = '󰠅 '
 style = 'blue'
 
 # ── GCloud ──
 [gcloud]
+disabled = true
 format = '[$symbol$account(@$domain)(\($project\) )]($style)'
 symbol = '☁️  '
 style = 'blue'
