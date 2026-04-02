@@ -33,6 +33,8 @@ if ! command -v brew &>/dev/null; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
   elif [[ -f "${HOME}/environment/homebrew/bin/brew" ]]; then
     eval "$(${HOME}/environment/homebrew/bin/brew shellenv)"
+  elif [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
   else
     # Try git clone first (works behind proxies and without sudo)
     echo "Installing Homebrew to ~/environment/homebrew..."

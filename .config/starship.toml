@@ -46,6 +46,8 @@ disabled = false
 style = 'bold white'
 
 [os.symbols]
+Fedora = "\uf30a "
+Linux = "\uf17c "
 Macos = "\uf179 "
 
 # ── Hostname ──

@@ -3,7 +3,9 @@
 
 # Font Configuration
 font-family = FiraCode Nerd Font Mono
-font-size = 13
+font-size = 11
+font-thicken = false
+freetype-load-flags = no-hinting
 font-feature = +calt  # Enable ligatures
 font-feature = +liga  # Enable ligatures
 font-feature = +dlig  # Enable discretionary ligatures
@@ -60,7 +62,14 @@ shell-integration-features = sudo,title,no-cursor
 macos-non-native-fullscreen = false
 macos-option-as-alt = true
 macos-titlebar-style = transparent
-window-theme = dark
+
+# Linux Specific
+gtk-titlebar = true
+
+# Theme
+window-theme = ghostty
+window-titlebar-background = #1a1a1a
+window-titlebar-foreground = #e0e0e0
 
 # Performance
 resize-overlay = never
