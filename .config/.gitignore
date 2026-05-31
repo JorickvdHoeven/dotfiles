@@ -1,0 +1,39 @@
+# ~/.config/.gitignore — patterns are relative to ~/.config
+# Tracked by the dotfiles bare repo:
+#   config = git --git-dir=~/.dotfiles --work-tree=~
+# Goal: ignore generated/cloned noise, keep hand-authored config + install scripts.
+
+# ── tmux ────────────────────────────────────────────────
+# Keep tmux.conf; TPM auto-clones tpm + all plugins on first run.
+tmux/plugins/
+
+# ── zsh / prompt plugins (cloned by install scripts) ────
+environment/fzf-tab/
+environment/powerlevel10k/
+environment/zsh-autosuggestions/
+environment/zsh-completions/
+environment/zsh-syntax-highlighting/
+environment/zsh-update_bak.sh
+
+# ── podman / containers runtime state ───────────────────
+containers/podman/
+containers/podman-connections.json
+
+# ── karabiner generated backups ─────────────────────────
+karabiner/automatic_backups/
+karabiner/assets/complex_modifications/
+
+# ── iTerm2 generated support files ──────────────────────
+iterm2/AppSupport
+
+# ── wine-generated application menus ────────────────────
+menus/applications-merged/
+
+# ── tool session logs / generated state ─────────────────
+metacode/
+opencode/
+uv/uv-receipt.json
+
+# ── catch-all: logs and lockfiles anywhere under .config ─
+*.log
+*.lock
