@@ -76,4 +76,4 @@ resize-overlay = never
 
 # Custom Shaders
 custom-shader = shaders/lightsaber-trail.glsl
-custom-shader-animation = always
+custom-shader-animation = true

@@ -33,7 +33,8 @@ const float C3_BACK = C1_BACK + 1.0;
 
 // EaseOutCirc
 float ease(float x) {
-    return sqrt(1.0 - pow(x - 1.0, 2.0));
+    float y = x - 1.0;
+    return sqrt(1.0 - y * y);
 }
 
 float getSdfRectangle(in vec2 p, in vec2 xy, in vec2 b) {
@@ -117,6 +118,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
     vec4 newColor = fragColor;
     float baseProgress = iTime - iTimeCursorChange;
+    float timeSinceFocus = iTime - iTimeFocus;
+    bool trailActive = cursorVisible && lineLength > minDist && baseProgress < DURATION - 0.001;
+    bool focusActive = cursorVisible && iFocus > 0 && timeSinceFocus < FOCUS_LINE_DURATION;
 
     // --- CURSOR GLOW (fades when idle to prevent ghosts in unfocused panes) ---
     float cursorDist = abs(sdfCurrentCursor);
@@ -130,9 +134,23 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float tuiDim = cursorVisible ? 1.0 : 0.35;
     float tuiFade = cursorVisible ? glowFade : glowFade * (1.0 - smoothstep(0.5, 1.5, timeSinceChange));
 
+    // Most fragments are nowhere near the cursor or active trail. Bail before
+    // the expensive pulse, glow, and quad SDF work.
+    float cursorInfluence = AMBIENT_RADIUS * 1.5;
+    if (!focusActive) {
+        float trailPadding = AMBIENT_RADIUS + max(currentCursor.z, currentCursor.w);
+        vec2 trailMin = min(centerCC, centerCP) - vec2(trailPadding);
+        vec2 trailMax = max(centerCC, centerCP) + vec2(trailPadding);
+        bool outsideTrailBounds = any(lessThan(vu, trailMin)) || any(greaterThan(vu, trailMax));
+
+        if (cursorDist > cursorInfluence && (!trailActive || outsideTrailBounds)) {
+            return;
+        }
+    }
+
     // Plasma pulse for that unstable lightsaber hum
     float pulse = 1.0 + 0.06 * sin(iTime * 20.0) + 0.03 * sin(iTime * 47.0);
-    float flicker = 1.0 + 0.02 * sin(iTime * 97.0 + vu.x * 50.0);
+    float flicker = 1.0 + 0.02 * sin(iTime * 97.0);
 
     // Glow layers around cursor
     float coreMask = smoothstep(CORE_RADIUS, 0.0, cursorDist) * pulse;
@@ -150,8 +168,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // --- FOCUS TRAIL (cursor "arrives" from farthest corner on window activation) ---
     // Reuses the same warp-style quad animation as the normal cursor trail,
     // with a synthetic previous position offset toward the farthest screen corner.
-    float timeSinceFocus = iTime - iTimeFocus;
-    if (cursorVisible && iFocus > 0 && timeSinceFocus < FOCUS_LINE_DURATION) {
+    if (focusActive) {
         // Virtual origin: offset cursor toward farthest screen corner
         float aspect = iResolution.x / iResolution.y;
         vec2 farCorner = vec2(
@@ -211,7 +228,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         float fSdf = getSdfConvexQuad(vu, fv_tl, fv_tr, fv_br, fv_bl);
 
         float fFadeProg = clamp(dot(vu - virtualPrev, fMoveVec) / (dot(fMoveVec, fMoveVec) + 1e-6), 0.0, 1.0);
-        float fFadeMask = pow(fFadeProg, 2.0);
+        float fFadeMask = fFadeProg * fFadeProg;
 
         float fTrailDist = max(fSdf, 0.0);
         float fInside = step(fSdf, 0.0);
@@ -233,7 +250,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     }
 
     // --- TRAIL (only when cursor is visible — skip in TUI mode) ---
-    if (cursorVisible && lineLength > minDist && baseProgress < DURATION - 0.001) {
+    if (trailActive) {
         // Define corners of current cursor
         float cc_half_height = currentCursor.w * 0.5;
         float cc_center_y = currentCursor.y - cc_half_height;
@@ -317,7 +334,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         // --- LIGHTSABER GLOW ON THE TRAIL ---
         // Fade gradient: 0 at tail, 1 at head
         float fadeProgress = clamp(dot(vu - centerCP, moveVec) / (dot(moveVec, moveVec) + 1e-6), 0.0, 1.0);
-        float fadeMask = pow(fadeProgress, 2.0);
+        float fadeMask = fadeProgress * fadeProgress;
 
         // Trail glow layers based on distance from trail shape
         float trailDist = max(sdfTrail, 0.0);

@@ -37,3 +37,4 @@ uv/uv-receipt.json
 # ── catch-all: logs and lockfiles anywhere under .config ─
 *.log
 *.lock
+nvim/lazy-lock.json
